@@ -1,0 +1,155 @@
+:root {
+  /* --accent-blue: #5BC9D7; */
+  --accent-blue: rgba(91, 201, 215, 0.8);
+  --accent-blue-transparent: rgba(91, 201, 215, 0.2);
+}
+
+.deck {
+  display: flex;
+}
+
+/* .decor-one {
+  z-index: 4;
+  color: rgba(91, 201, 215, 0.2);
+  z-index: -1;
+  position: absolute;
+  top: 40%;
+  left: 30;
+}
+.decor-one:hover {
+  color: rgba(91,201, 215, 0.7);
+} */
+
+.navigation-bar {
+  height: 15%;
+  width: 92%;
+  padding: 3% 4%;
+  border: 2px solid black;
+  border-radius: 20px;
+}
+
+.button {
+  border-radius: 5px;
+  font-weight: 900;
+}
+
+.create-button {
+  border: 3px solid grey;
+  background-color: grey;
+  padding: 1% 2%;
+  font-size: large;
+  color: white;
+
+  transition-duration: 0.5s;
+}
+.create-button:hover {
+  background-color: grey;
+  color: white;
+  cursor: pointer;
+}
+
+.search-bar {
+  border-radius: 10px;
+}
+
+.create-modal {
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  left: 25%;
+  top: 25%;
+  height: 40%;
+  width: 40%;
+  background-color: white;
+  border: 2px solid grey;
+  border-radius: 10px;
+  z-index: 1;
+  padding: 5% 5%;
+}
+
+.hide {
+  display: none;
+}
+
+.show {
+  display: block;
+}
+
+.form-input {
+  width: 90%;
+  border-radius: 8px;
+  padding: 2% 5%;
+  border: 2px solid grey;
+}
+
+.author-field {
+  background-color: whitesmoke;
+}
+
+.tag-filters {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  gap: 2%;
+  padding: 0% 3%;
+}
+.tag-filters:hover {
+  cursor: pointer;
+}
+
+.tag {
+  width: fit-content;
+  padding: 1vh 2vh;
+  border-radius: 5%;
+}
+
+.submit-button {
+  width: 15%;
+}
+
+.warning {
+  color: red;
+  font-weight: 700;
+}
+
+.rotate {
+  animation: rotation 10s infinite linear;
+}
+@keyframes rotation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+/* Defining the box for the slider and also hiding the default checkbox. */
+.switch {
+  width: 5%;
+  height: 5%;
+  position: relative;
+  display: inline-block;
+}
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Slider in switch. */
+/* Also defines what comes before the slider. */
+.slider {
+  position: absolute;
+  cursor: pointer;
+  -webkit-transition: 0.4s;
+  transition: 0.4s;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+
+}
+.slider:before {
+}

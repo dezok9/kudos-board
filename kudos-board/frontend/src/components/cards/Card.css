@@ -1,0 +1,7 @@
+.kudos-card {
+    height: 25%;
+    width: 20%;
+    padding: 3% 2%;
+    border: 2px solid black;
+    border-radius: 20px;
+  }
