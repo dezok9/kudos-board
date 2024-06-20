@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import './App.css';
-import Boards from './Boards.jsx';
+import Boards from './components/boards/Boards';
 
 function App() {
 
@@ -16,11 +16,16 @@ function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
 
-
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("@me");
 
   const DATABASE = import.meta.env.VITE_BACKEND_ADDRESS;
+  const TAGS = {"all": "rgba(0, 0, 0, 0.4)",
+              "birthdays": "rgba(0, 0, 0, 0.4)",
+              "community": "rgba(0, 0, 0, 0.4)",
+              "celebration": "rgba(0, 0, 0, 0.4)",
+              "projects & work": "rgba(0, 0, 0, 0.4)",
+              "thank you": "rgba(0, 0, 0, 0.4"};
 
   /***
    * Fetching the board information from our database.
@@ -36,8 +41,6 @@ function App() {
 
       const boards = await response.json();
       setBoardData(boards);
-
-      boardData.forEach((board) => board[key] = board[id])
     }
     catch (error) {
       console.log(`ERROR GETTING BOARDS: ${error}.`);
@@ -67,11 +70,96 @@ function App() {
       if (!response.ok) {
         throw new Error(`HTTP fetch error! Status of ${response.status}.`);
       }
+
+      fetchBoards();
     }
     catch (error) {
       console.log(`ERROR GETTING BOARDS: ${error}.`);
     }
   }
+
+  /***
+   * Upvote cards (change the upvote count to +1) given the cardID and currentUpvote that was previously retrieved.
+   * Passed to Cards for use.
+   */
+  async function upvoteCard(id, currentUpvotes) {
+    try {
+      const response = await fetch(`${DATABASE}/cards/upvote/${id}`,
+          {method: "PUT",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            "body": JSON.stringify({
+              upvote: (currentUpvotes + 1)
+            })
+          });
+
+      // Checks if res.ok, a boolean value checking if the fetch was successful (200-299).
+      if (!response.ok) {
+        throw new Error(`HTTP fetch error! Status of ${response.status}.`);
+      }
+
+      fetchBoards();
+    }
+    catch (error) {
+      console.log(`ERROR GETTING BOARDS: ${error}.`);
+    }
+  }
+
+
+  /***
+   * Removing boards from our database using the id value.
+   * Passed into the Boards component for use on individual boards.
+   */
+  async function deleteBoard(boardID) {
+    try {
+      const response = await fetch(`${DATABASE}/boards/${boardID}`,
+        {method: "DELETE",
+          headers: {
+            "Content-Type": "application/json"
+          }
+        });
+
+      // Checks if res.ok, a boolean value checking if the fetch was successful (200-299).
+      if (!response.ok) {
+        throw new Error(`HTTP fetch error! Status of ${response.status}.`);
+      }
+
+      fetchBoards();
+    }
+    catch (error) {
+      console.log(`ERROR GETTING BOARD: ${error}.`);
+    }
+  }
+
+
+  /***
+   * Filters by the indicated tag.
+   * Performed when one of the tags is clicked.
+   */
+  async function filterByTag(tag) {
+    if (tag == "all") {
+      fetchBoards();
+    }
+   else {
+      try {
+        const response = await fetch(`${DATABASE}/boards/filter/${tag}`);
+        const boards = await response.json();
+        console.log(boards)
+
+        // Checks if res.ok, a boolean value checking if the fetch was successful (200-299).
+        if (!response.ok) {
+          throw new Error(`HTTP fetch error! Status of ${response.status}.`);
+        }
+
+        setBoardData(boards);
+      }
+      catch (error) {
+        console.log(`ERROR GETTING BOARD: ${error}.`);
+      }
+    }
+  }
+
 
   /***
    * Controls the opening of the modal for board creation.
@@ -82,8 +170,8 @@ function App() {
     }
 
     setIsModalOpen(!isModalOpen);
-    console.log(isModalOpen)
   }
+
 
   /***
    * Handles submission of the board creation form.
@@ -98,9 +186,12 @@ function App() {
       const date = new Date();
       const today = date.getFullYear() + "-0" + (date.getMonth() + 1) + "-" + date.getDate();
 
+      handleModalState();
+
       postBoard(title, author, "", [], today);
     }
   }
+
 
   /***
    * Handles changes to the board creation form.
@@ -110,13 +201,24 @@ function App() {
   }
 
 
+  /***
+   * Returns filter div for each tag.
+   */
+  function createTagFilters(tag) {
+    const tagColor = TAGS[tag];
+    return(
+      <div className='tag' style={{backgroundColor: tagColor}} onClick={() => filterByTag(tag)} key={Math.random()*100000}>{tag}</div>
+    )
+  }
+
+
   useEffect(() => {
     fetchBoards();
-  }, []);
+  }, [isModalOpen]);
 
-  useEffect(() => {}, [title])
+  useEffect(() => {}, [title]);
 
-  useEffect(() => {}, [isModalOpen]);
+  useEffect(() => {}, [boardData]);
 
   // document.addEventListener("mousedown", (event) => {
   //   if (isModalOpen && event.target.id != "show") {
@@ -128,17 +230,32 @@ function App() {
   return (
     <>
       <section className='page'>
+        {/* <section>
+          <i className='fa-solid fa-certificate fa-10x decor-one rotate'></i>
+          <i className='fa-solid fa-certificate fa-6x decor-two rotate'></i>
+          <i className='fa-solid fa-certificate rotate'></i>
+        </section> */}
+
         <div className='navigation-bar'>
           <h2>Kudos</h2>
           <button className='button create-button' onClick={handleModalState}>Create</button>
           <button className='button profile-button'>Profile</button>
           <input className='search-bar' placeholder='Search for a kudos...'></input>
+          <div>
+            <i className="fa-solid fa-user"></i>
+            <i className="fa-solid fa-door-closed"></i>
+          </div>
         </div>
+
+        <div className='tag-filters'>
+          {Object.keys(TAGS).map(createTagFilters)}
+        </div>
+
         <div className='cards'>
-
-
           <Boards
             boardsData = {boardData}
+            deleteBoard = {deleteBoard}
+            TAGS = {TAGS}
             key = {1}
           />
         </div>

@@ -23,18 +23,73 @@ app.post("/boards", async (req, res) => {
             date
         }
     });
-    res.status(201).json(newBoard);
+    res.status(201).json();
+})
+
+app.put("/boards/upvote/:id", async (req, res) => {
+    const upvoteData = req.body.upvote;
+    const boardID = req.params.id;
+    const board = await prisma.boards.findUnique(
+        {
+            where: {
+                id: boardID,
+            },
+        }
+    )
+
+    await
+
+    res.status(200).json();
+})
+
+app.get("/boards/:id", async (req, res) => {
+    const boardID = req.params.id;
+    const board = await prisma.boards.findUnique(
+        {
+            where: {id: Number(boardID)},
+        }
+    );
+    res.status(200).json(board);
+})
+
+app.get("/boards/filter/:tag", async (req, res) => {
+    const tag = req.params.tag;
+    const boards = await prisma.boards.findMany(
+        {
+            where: {
+                tags: {
+                    has: tag,
+                },
+            },
+        }
+    );
+    res.status(200).json(boards);
+})
+
+app.get("/boards/search/:query", async (req, res) => {
+    const query = req.params.query;
+    const boards = await prisma.boards.findMany(
+        {
+            where: {
+                title: {
+                    has: query,
+                },
+            },
+        }
+    );
+    res.status(200).json(boards);
 })
 
 app.delete("/boards/:id", async (req, res) => {
-    const { boardID } = req.params;
+    const boardID = req.params.id;
     await prisma.boards.delete(
         {
-            where: { id: parseInt(boardID)}
+            where: {id: Number(boardID)},
         }
     );
-    res.status(200);
+    res.status(200).json();
 })
+
 
 const PORT = 3000;
 app.listen(PORT, () => {

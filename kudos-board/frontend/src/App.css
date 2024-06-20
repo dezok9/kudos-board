@@ -4,18 +4,26 @@
   --accent-blue-transparent: rgba(91, 201, 215, 0.2);
 }
 
-.page {
-  margin: 1% 4%;
-}
-
 .deck {
   display: flex;
 }
 
+/* .decor-one {
+  z-index: 4;
+  color: rgba(91, 201, 215, 0.2);
+  z-index: -1;
+  position: absolute;
+  top: 40%;
+  left: 30;
+}
+.decor-one:hover {
+  color: rgba(91,201, 215, 0.7);
+} */
+
 .navigation-bar {
   height: 15%;
-  width: 100%;
-  padding: 3% 2%;
+  width: 92%;
+  padding: 3% 4%;
   border: 2px solid black;
   border-radius: 20px;
 }
@@ -76,6 +84,23 @@
 
 .author-field {
   background-color: whitesmoke;
+}
+
+.tag-filters {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+  gap: 2%;
+  padding: 0% 3%;
+}
+.tag-filters:hover {
+  cursor: pointer;
+}
+
+.tag {
+  width: fit-content;
+  padding: 1vh 2vh;
+  border-radius: 5%;
 }
 
 .submit-button {
