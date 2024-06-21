@@ -31,7 +31,7 @@ model Boards {
   upvotes       Int      @default(0)
 
   authorHandle  String
-  author        Users  @relation(fields: [authorHandle], references: [handle])
+  author        Users  @relation(fields: [authorHandle], references: [handle],  onDelete: Cascade)
 
   cardIDs       Int[]
   Cards         Cards[]
@@ -44,9 +44,9 @@ model Cards {
   gifURL        String
   upvotes       Int    @default(0)
 
-  authorHandle  String @default("Anonymous")
-  author        Users  @relation(fields: [authorHandle], references: [handle])
+  authorHandle  String @default("@anonymous")
+  author        Users  @relation(fields: [authorHandle], references: [handle],  onDelete: Cascade)
 
   boardID       Int
-  board         Boards @relation(fields: [boardID], references: [id])
+  board         Boards @relation(fields: [boardID], references: [id], onDelete: Cascade)
 }
