@@ -1,6 +1,13 @@
+body {
+}
 
+.albert-sans> {
+  font-family: "Albert Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 300;
+  font-style: normal;
+}
 
 body {
-  padding: 5% 9%;
-  font-family: "Arial";
+  font-family: "Albert Sans";
 }
