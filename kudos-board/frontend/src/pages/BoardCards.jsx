@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react"
 import { useLocation, Link } from 'react-router-dom'
+import Header from "../components/Header"
 import Card from '../components/cards/Card'
 import './BoardCards.css'
 
 function BoardCards() {
     const [cardsData, setCardsData] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [areCommentsOpen, setAreCommentsOpen] = useState(false);
     const [showWarning, setShowWarning] = useState(false);
     const [title, setTitle] = useState("");
     const [author, setAuthor] = useState("@user");
@@ -15,24 +17,31 @@ function BoardCards() {
     const [searchQuery, setSearchQuery] = useState("");
     const [chosenGIF, setChosenGIF] = useState("");
 
+    const [comment, setComment] = useState("");
+    const [allComments, setAllComments] = useState([]);
+    const [cardIDCommentModalOpen, setCardIDCommentModalOpen] = useState(-1);   // Holds the id of the last card clicked on to open the comment modal.
+    const [currentCardComments, setCurrentCardComments] = useState([]);   // Holds the comments of the last card clicked on to open the comment modal.
+
+
     const location = useLocation();
 
     const pathname = location.pathname;
     const boardID = (pathname.split("/"))[pathname.split("/").length - 1];
 
     const GIFY_API_KEY = import.meta.env.VITE_GIFY_API_KEY;
+    const DATABASE = import.meta.env.VITE_BACKEND_ADDRESS;
+
 
     const user = location.state;
 
 
-    const DATABASE = import.meta.env.VITE_BACKEND_ADDRESS;
 
     /***
      *
      */
     async function fetchCards() {
         try {
-            const response = await fetch(`${DATABASE}/boards/${boardID}`);
+            const response = await fetch(`${DATABASE}/boards/${boardID}/cards`);
             const cards = await response.json();
 
             // Checks if res.ok, a boolean value checking if the fetch was successful (200-299).
@@ -72,6 +81,82 @@ function BoardCards() {
           }
     }
 
+
+    async function openComments(cardID) {
+        handleCommentsModalState();
+        setCardIDCommentModalOpen(cardID);
+
+        const card = await fetchCard(cardID);
+        console.log(card);
+
+        setCurrentCardComments(card.comments);
+        setAllComments(card.comments);
+    }
+
+    /***
+     *
+     */
+    async function putComment() {
+        try {
+            const response = await fetch(`${DATABASE}/cards/${cardIDCommentModalOpen}/comment`,
+                {method: "PUT",
+                    headers: {
+                    "Content-Type": "application/json"
+                    },
+                    "body": JSON.stringify({
+                        comments: currentCardComments.concat([comment])
+                    })
+                });
+
+            // Checks if res.ok, a boolean value checking if the fetch was successful (200-299).
+            if (!response.ok) {
+                throw new Error(`HTTP fetch error! Status of ${response.status}.`);
+            }
+
+            handleCommentsChange("");
+            setAreCommentsOpen(false);
+            openComments(cardIDCommentModalOpen);
+            }
+            catch (error) {
+                console.log(`ERROR EDITING BOARD: ${error}.`);
+            }
+    }
+
+    /***
+     *
+     */
+    async function fetchCard(cardID) {
+        try {
+            const response = await fetch(`${DATABASE}/cards/${cardID}`);
+            console.log(response)
+            const card = await response.json();
+            console.log(card);
+
+            // Checks if res.ok, a boolean value checking if the fetch was successful (200-299).
+            if (!response.ok) {
+              throw new Error(`HTTP fetch error! Status of ${response.status}.`);
+            }
+
+            return card;
+          }
+          catch (error) {
+            console.log(`ERROR GETTING CARDS: ${error}.`);
+          }
+    }
+
+    /***
+     *
+     */
+    function createComment(commentInfo) {
+        return (
+            <div className='comment'>
+                {commentInfo}
+            </div>
+        )
+    }
+
+
+
     /***
      *
      */
@@ -82,8 +167,8 @@ function BoardCards() {
 
         return (
             <div className='card' key={cardData.id}>
-                <img src={cardData.gifURL}></img>
-                <div>
+                <img className="card-img" src={cardData.gifURL}></img>
+                <div className="card-info">
                     <p className='card-id'>#{cardData.id}</p>
                     <p>{cardData.title}</p>
                     <p className='author'>{cardData.authorHandle}</p>
@@ -92,7 +177,10 @@ function BoardCards() {
                     <div>
                         <p><i className="fa-regular fa-heart" onClick={() => upvoteCard(cardID, cardUpvotes)}></i>  {cardData.upvotes}</p>
                     </div>
-                    <i className="fa-solid fa-trash" onClick={() => deleteCard(cardID)}></i>
+                    <div style={{display: "flex", justifyContent: "space-between"}}>
+                        <i className="fa-solid fa-trash" onClick={() => deleteCard(cardID)}></i>
+                        <i class="fa-solid fa-comment" onClick={() => openComments(cardID)}></i>
+                    </div>
                 </div>
             </div>
         )
@@ -101,8 +189,7 @@ function BoardCards() {
     /***
      * Adding new card information to our database.
      */
-    async function postCard(cardTitle, cardMessage, cardGIF) {
-        console.log(user)
+    async function postCard(cardTitle, cardMessage) {
         try {
         const response = await fetch(`${DATABASE}/boards/${boardID}/cards`,
             {method: "POST",
@@ -113,7 +200,7 @@ function BoardCards() {
                     title: cardTitle,
                     author: {connect: {"handle": user}},
                     message: cardMessage,
-                    gifURL: cardGIF,
+                    gifURL: chosenGIF,
                     board: { connect: { "id": Number(boardID) } }
                 })
             });
@@ -175,11 +262,10 @@ function BoardCards() {
         }
     }
 
-    function choose(event) {
+    function chooseGIF(gifInfo) {
         console.log("xd")
-        event.stopPropogation()
         setGIFYoptions([]);
-        setChosenGIF(gifInfo.url);
+        setChosenGIF(gifInfo.images.original.url);
     }
 
     /***
@@ -187,7 +273,7 @@ function BoardCards() {
      */
     function renderGIFs(gifInfo) {
         return (
-            <iframe key={gifInfo.id} className='gif' src={gifInfo.embed_url} onClick={choose}></iframe>
+            <img className='gif' src={gifInfo.images.original.url} onClick={() => chooseGIF(gifInfo)}></img>
         )
     }
 
@@ -202,8 +288,12 @@ function BoardCards() {
         }
         else {
             handleModalState();
+            setTitle("");
+            setAuthor("");
+            setMessage("");
+            setSearchString("");
 
-            postCard(title, message, "");
+            postCard(title, message, chosenGIF);
         }
     }
 
@@ -215,10 +305,24 @@ function BoardCards() {
     }
 
     /***
+     * Controls the opening of the modal for board creation.
+     */
+    function handleCommentsModalState() {
+        setAreCommentsOpen(!areCommentsOpen);
+    }
+
+    /***
      * Handles changes to the board creation form.
      */
     function handleTitleChange(event) {
         setTitle(event.target.value);
+    }
+
+    /***
+     * Handles changes to the board creation form.
+     */
+    function handleCommentsChange(value) {
+        setComment(value);
     }
 
     /***
@@ -235,24 +339,52 @@ function BoardCards() {
         setSearchString(event.target.value);
     }
 
-    useEffect(() => {}, [cardsData]);
-
     useEffect(() => {fetchCards()}, [])
 
-    useEffect(() => {fetchCards()}, [isModalOpen])
+    useEffect(() => {}, [allComments])
 
-    useEffect(() => {setIsModalOpen(true)}, [GIFYoptions])
+    useEffect(() => {}, [cardsData])
+
+    useEffect(() => {fetchCards}, [isModalOpen])
+
+    useEffect(() => {handleModalState}, [GIFYoptions])
+
 
     return (
-        <>
-            <Link to="/" state={user}><button>Back</button></Link>
-            <button onClick={handleModalState}>Add Card</button>
+        <section className="cards-page">
+            <Header />
+
+            <div className="buttons">
+                <Link to="/" state={user} ><button className="button">Back</button></Link>
+                <button className="button" onClick={handleModalState}>Add Card</button>
+            </div>
+
 
             <div id='cards'>
                 {cardsData.map(createCard)}
             </div>
 
+
+            {/* Comments modal */}
+            <div className={'modal ' + (areCommentsOpen ? 'show' : 'hide')}>
+                <span className='exit' onClick={handleCommentsModalState}><i className="fa-solid fa-circle-xmark fa-xl"></i></span>
+                <h1>Comments</h1>
+
+                <div className="all-comments">
+                    {allComments.map(createComment)}
+                </div>
+
+                <section style={{position: "absolute", bottom: "0", marginBottom: "5%", width: "100%", justifyItems: "center"}}>
+                    <textarea id='title' className='form-input' style={{height: "15%", width: "60%"}}  rows="3" cols="25" value={comment} onChange={(event) => handleCommentsChange(event.target.value)} placeholder={"Add to the discussion..."}></textarea>
+                    <button className="button" style={{height: "15%", width: "60%"}} onClick={() => putComment()}>Comment</button>
+                </section>
+            </div>
+
+
+
+            {/* Creation modal */}
             <div className={'modal ' + (isModalOpen ? 'show' : 'hide')}>
+                <span className='exit' onClick={handleModalState}><i className="fa-solid fa-circle-xmark fa-xl"></i></span>
                 <section className='title-section'>
                     <p>Title</p>
                     <input id='title' className='form-input' value={title} onChange={handleTitleChange}></input>
@@ -282,18 +414,11 @@ function BoardCards() {
                     <input className='form-input author-field' value={chosenGIF} onChange={handleSearchChange} readOnly></input>
                 </section>
 
-                <section>
-                <p>Tags</p>
-                    <div>
-                        <input className='tag-checkbox'type='checkbox'/>
-                    </div>
-                </section>
-
                 <button className='submit-button' onClick={handleSubmit}>Submit</button>
 
                 <p className={'warning ' + (showWarning ? 'show' : 'hide')}><i className='fa-solid fa-certificate rotate'></i>  Please fill in all required fields.</p>
             </div>
-        </>
+        </section>
     )
 }
 

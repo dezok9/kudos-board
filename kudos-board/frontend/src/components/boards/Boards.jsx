@@ -9,17 +9,6 @@ import './Boards.css'
 function Boards(boards) {
     const navigate = useNavigate();
 
-    /***
-     * Generates tags using the colors assigned to each tag as communicated by boards.tagColors.
-     */
-    function generateTag(tag) {
-        const tagColor = boards.TAGS[tag]
-
-        return (
-            <p className='tag' style={{backgroundColor: tagColor}} key={Math.random()*1000}>{tag}</p>
-        )
-    }
-
     function upvote() {
     }
 
@@ -76,6 +65,9 @@ function Boards(boards) {
         }
     }
 
+
+
+
     /***
      * Render a singular board using the data provided about that specific board as provided by boardData.
      */
@@ -85,17 +77,15 @@ function Boards(boards) {
 
         return (
             <Link to={`/board/${boardData.id}`} state={boards.routeState} className='board-card' key={boardData.id}>
-                <img src={boards.imgURL}></img>
                 <p className='board-id'>#{boardData.id}</p>
+                <img className='img' src={boardData.imgURL}></img>
                 <p>{boardData.title}</p>
+                <p><em>{boardData.description === "" ? "No description." : boardData.description}</em></p>
                 <p className='author'>{boardData.authorHandle}</p>
                 <div>
-                    {boardData.tags.map(generateTag)}
+                    {boardData.tags.map(boards.generateTag)}
                 </div>
                 <p>{boardData.date}</p>
-                <div>
-                    <p><i id='heart' className="fa-regular fa-heart" onClick={(boardID, boardUpvotes) => {upvoteBoard}}></i>  {boardData.upvotes}</p>
-                </div>
                 <i className="fa-solid fa-trash" onClick={() => deleteBoard(boardData.id)}></i>
             </Link>
 

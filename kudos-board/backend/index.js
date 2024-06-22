@@ -10,7 +10,17 @@ app.use(cors());
 // BOARD OPERAITONS:
 
 app.get("/boards", async (req, res) => {
-    const boards = await prisma.boards.findMany();
+    const boards = await prisma.boards.findMany(
+        {orderBy: {id : 'asc'}}
+    );
+    res.status(200).json(boards);
+})
+
+app.get("/boards/recents", async (req, res) => {
+    const boards = await prisma.boards.findMany({
+        take: 5,
+        orderBy: {id : 'asc'}
+    });
     res.status(200).json(boards);
 })
 
@@ -42,12 +52,13 @@ app.get("/boards/search/:searchQuery", async (req, res) => {
 })
 
 app.post("/boards", async (req, res) => {
-    const { title, author, imgURL, tags, date } = req.body;
+    const { title, author, imgURL, description, tags, date } = req.body;
     const newBoard = await prisma.boards.create({
         data: {
             title,
             author,
             imgURL,
+            description,
             tags,
             date
         }
@@ -75,6 +86,7 @@ app.put("/boards/upvote/:id", async (req, res) => {
 
 app.delete("/boards/:id", async (req, res) => {
     const boardID = req.params.id;
+    console.log(boardID)
     await prisma.boards.delete(
         {
             where: {id: Number(boardID)},
@@ -91,21 +103,30 @@ app.delete("/boards/:id", async (req, res) => {
 
 // CARD OPERATIONS:
 
-app.get("/boards/:id", async (req, res) => {
+app.get("/boards/:id/cards", async (req, res) => {
     const boardID = req.params.id;
     const board = await prisma.cards.findMany(
         {
-            where: {boardID: Number(boardID)},
+            where: {board: {id: Number(boardID)}},
+            orderBy: {id : 'asc'}
         }
     );
     res.status(200).json(board);
 })
 
+app.get("/cards/:cardID", async (req, res) => {
+    const cardID = req.params.cardID;
+
+    const card = await prisma.cards.findUnique(
+        {
+            where: {id: Number(cardID)},
+        }
+    );
+    res.status(200).json(card);
+})
+
 app.delete("/cards/:cardID", async (req, res) => {
     const cardID = req.params.cardID;
-    // const boardID = req.params.boardID;
-    // const userID = req.
-    // await prisma.
 
     await prisma.cards.delete(
         {
@@ -114,6 +135,8 @@ app.delete("/cards/:cardID", async (req, res) => {
     );
     res.status(200).json();
 })
+
+
 
 app.put("/cards/upvote/:id", async (req, res) => {
     const newUpvote = req.body.upvotes;
@@ -147,6 +170,24 @@ app.post("/boards/:id/cards", async (req, res) => {
     );
     res.status(200).json();
 })
+
+app.put("/cards/:id/comment", async (req, res) => {
+    const cardID = req.params.id;
+    const { comments } = req.body;
+
+    await prisma.cards.update(
+        {
+            data: {
+                comments
+            },
+            where: {
+                id: Number(cardID)
+            }
+        }
+    );
+    res.status(200).json();
+})
+
 
 const PORT = 3000;
 app.listen(PORT, () => {
