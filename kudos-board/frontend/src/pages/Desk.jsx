@@ -2,19 +2,12 @@ import { useState, useEffect } from 'react';
 import Boards from '../components/boards/Boards';
 import Header from '../components/Header'
 import './Desk.css';
+import Footer from '../components/Footer';
 
 
 function Desk() {
-  const sample = {
-    id: 1,
-    title: "Capstone Project",
-    author: "@dezok",
-    imgURL: "https://picsum.photos/id/237/200/300",
-    tags: ["projects"],
-    date: "June 18, 2024"
-  }
   // User ID stored and passed to other pages.
-  const [user, setUser] = useState("@dezok");
+  const [user, setUser] = useState("@user");
 
   const routeState = user;
 
@@ -25,15 +18,30 @@ function Desk() {
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("@user");
   const [searchQuery, setSearchQuery] = useState("");
+  const [description, setDescription] = useState("");
+
+
+  const [birthdaysSelected, setBirthdaysSelected] = useState(false);
+  const [communitySelected, setCommunitySelected] = useState(false);
+  const [celebrationSelected, setCelebrationSelected] = useState(false);
+  const [projectsSelected, setProjectsSelected] = useState(false);
+  const [thanksSelected, setThanksSelected] = useState(false);
+
+  const [anonymous, setAnonymous] = useState(false);
+  const [guest, setGuest] = useState(false);
+
+  const buttonStates = {"birthdays": birthdaysSelected, "community": communitySelected,
+      "celebration": celebrationSelected, "projects & work": projectsSelected, "thank you": thanksSelected};
 
   const DATABASE = import.meta.env.VITE_BACKEND_ADDRESS;
-  const GIFY_API_KEY = import.meta.env.GIFY_API_KEY;
+  const GIFY_API_KEY = import.meta.env.VITE_GIFY_API_KEY;
   const TAGS = {"all": "rgba(0, 0, 0, 0.4)",
-              "birthdays": "rgba(117, 185, 190, 0.6)",
-              "community": "rgba(249, 181, 172, 0.6)",
-              "celebration": "rgba(170, 125, 206, 0.6)",
-              "projects & work": "rgba(0, 0, 0, 0.6)",
-              "thank you": "rgba(0, 0, 0, 0.6"};
+              "recent": "rgba(207, 159, 255, 0.6)",
+              "birthdays": "rgba(129, 210, 224, 0.6)",
+              "community": "rgba(73, 196, 161, 0.6)",
+              "celebration": "rgba(237, 182, 37, 0.6)",
+              "projects & work": "rgba(230, 24, 109, 0.6)",
+              "thank you": "rgba(255, 87, 51, 0.6"};
 
   /***
    * Fetching the board information from our database.
@@ -55,11 +63,85 @@ function Desk() {
     }
   }
 
+  async function fetchRecents() {
+    try {
+      const response = await fetch(`${DATABASE}/boards/recents`);
+
+      // Checks if res.ok, a boolean value checking if the fetch was successful (200-299).
+      if (!response.ok) {
+        throw new Error(`HTTP fetch error! Status of ${response.status}.`);
+      }
+
+      const boards = await response.json();
+      setBoardData(boards);
+    }
+    catch (error) {
+      console.log(`ERROR GETTING BOARDS: ${error}.`);
+    }
+  }
+
+  /***
+   * Gets a sticker that matches the theme of the board.
+   * Either searches by the first tag or by the title of the board.
+   */
+  async function getImgURL(title, tags) {
+    try {
+      let apiQuery = "https://api.giphy.com/v1/stickers/search?rating=g?q="
+
+      if (tags.length == 0) {
+        apiQuery = apiQuery.concat(title);
+      }
+      else {
+        apiQuery += tags[0];
+      }
+
+      apiQuery = apiQuery.concat(`&limit=1&api_key=${GIFY_API_KEY}`);
+      // apiQuery = apiQuery.replace(" ", "+");
+
+      const response = await fetch(apiQuery);
+      const gifyData = await response.json();
+
+      if (gifyData.meta.status != 200) {
+        throw new Error(`HTTP fetch error! Status of ${response.status}.`);
+      }
+
+      if (gifyData.data[0] != undefined) {
+        return gifyData.data[0].images.fixed_height_downsampled.url;
+      }
+      else {
+        apiQuery = `https://api.giphy.com/v1/stickers/random?tag=happy&rating=g&api_key=${GIFY_API_KEY}`
+
+        const response = await fetch(apiQuery);
+        const resData = await response.json();
+
+
+        return resData.data.images.fixed_height_downsampled.url;
+      }
+    }
+    catch {
+
+    }
+  }
+
   /***
    * Adding new board information to our database.
    */
-  async function postBoard(boardTitle, boardAuthor, boardImgURL, boardTags, boardDate) {
+  async function postBoard(boardTitle, boardAuthor, description, boardDate) {
+    let tags = []
+      if (birthdaysSelected){
+        tags.push("birthdays");}
+      if (communitySelected){
+        tags.push("community");}
+      if (celebrationSelected){
+        tags.push("celebration");}
+      if (projectsSelected){
+        tags.push("projects & work");}
+      if (thanksSelected){
+        tags.push("thank you");}
+
     try {
+      const gifURL = await getImgURL(boardTitle, tags);
+
       const response = await fetch(`${DATABASE}/boards`,
           {method: "POST",
             headers: {
@@ -67,9 +149,10 @@ function Desk() {
             },
             "body": JSON.stringify({
               title: boardTitle,
-              author: {connect: {handle: boardAuthor}},
-              imgURL: boardImgURL,
-              tags: boardTags,
+              author: {connect: {handle: author}},
+              description: description,
+              imgURL: gifURL,
+              tags: tags,
               date: boardDate
             })
           });
@@ -78,7 +161,6 @@ function Desk() {
       if (!response.ok) {
         throw new Error(`HTTP fetch error! Status of ${response.status}.`);
       }
-
       fetchBoards();
     }
     catch (error) {
@@ -95,7 +177,10 @@ function Desk() {
     if (tag == "all") {
       fetchBoards();
     }
-   else {
+    if (tag == "recent") {
+      fetchRecents();
+    }
+    else {
       try {
         const response = await fetch(`${DATABASE}/boards/filter/${tag}`);
         const boards = await response.json();
@@ -134,6 +219,72 @@ function Desk() {
         }
     }
 
+    /***
+       * Generates filled tags using the colors assigned to each tag as communicated by boards.tagColors.
+       */
+    function generateTag(tag) {
+      const tagColor = TAGS[tag]
+
+      return (
+          <p className='tag' style={{backgroundColor: tagColor, border: `2px solid ${tagColor}`}} onClick={() => filterByTag(tag)} key={Math.random()*1000}>{tag}</p>
+      )
+  }
+
+  /***
+       * Generates tags using the colors assigned to each tag as communicated by boards.tagColors.
+       */
+  function generateOutlinedTag(tag) {
+    const tagColor = TAGS[tag]
+
+    return (
+        <p className='tag' style={{border: `2px solid ${tagColor}`}} key={Math.random()*1000}>{tag}</p>
+    )
+  }
+
+  function toggleFilter(tag) {
+    switch(tag) {
+      case "birthdays":
+        setBirthdaysSelected(!birthdaysSelected)
+        break;
+      case "community":
+        setCommunitySelected(!communitySelected)
+        break;
+      case "celebration":
+        setCelebrationSelected(!celebrationSelected)
+        break;
+      case "projects & work":
+        setProjectsSelected(!projectsSelected)
+        break;
+      case "thank you":
+        setThanksSelected(!thanksSelected)
+        break;
+    }
+  }
+
+  /***
+   * Generates filled tags using the colors assigned to each tag as communicated by boards.tagColors.
+   */
+  function generateSelectorTag(tag) {
+    const tagColor = TAGS[tag]
+
+    return (
+        <p className='tag' onClick={() => toggleFilter(tag)} style={{backgroundColor: tagColor, border: `2px solid ${tagColor}`}} key={Math.random()*1000}>{tag}</p>
+    )
+    }
+
+    /***
+     * Generates tags using the colors assigned to each tag as communicated by boards.tagColors.
+     */
+    function generateSelectorOutlinedTag(tag) {
+      const tagColor = TAGS[tag]
+
+      return (
+          <p className='tag' onClick={() => toggleFilter(tag)}  style={{border: `2px solid ${tagColor}`}} key={Math.random()*1000}>{tag}</p>
+      )
+    }
+
+
+
 
   /***
    * Controls the opening of the modal for board creation.
@@ -141,6 +292,11 @@ function Desk() {
   function handleModalState() {
     if (isModalOpen) {
       setShowWarning(false);
+      setBirthdaysSelected(false);
+      setCommunitySelected(false);
+      setCelebrationSelected(false);
+      setProjectsSelected(false);
+      setThanksSelected(false);
     }
 
     setIsModalOpen(!isModalOpen);
@@ -162,7 +318,36 @@ function Desk() {
 
       handleModalState();
 
-      postBoard(title, author, "", [], today);
+      postBoard(title, author, description, today);
+    }
+  }
+
+
+  /***
+   *
+   */
+  function clickAnonymous() {
+    setAnonymous(!anonymous);
+
+    if (!anonymous) {
+      setAuthor("@anonymous");
+    }
+    else if (anonymous && guest) {
+      setAuthor("@guest");
+    }
+    else {
+      setAuthor("@user")
+    }
+  }
+
+  function clickGuest() {
+    setGuest(!guest);
+
+    if (guest && !anonymous) {
+      setAuthor("@user");
+    }
+    else if (!guest && !anonymous) {
+      setAuthor("@guest")
     }
   }
 
@@ -175,21 +360,31 @@ function Desk() {
   }
 
   /***
+   * Handles changes to the board creation form.
+   */
+  function handleAnonymousChange(event) {
+    setAnonymous(event.target.value);
+  }
+
+  /***
+   * Handles changes to the board creation form.
+   */
+  function handleGuestChange(event) {
+    setGuest(event.target.value);
+  }
+
+  /***
    * Handle search button being hit.
    */
   function handleSearch(event) {
     setSearchQuery(event.target.value);
   }
 
-
-  /***
-   * Returns filter div for each tag.
+   /***
+   * Handles changes to the board creation form.
    */
-  function createTagFilters(tag) {
-    const tagColor = TAGS[tag];
-    return(
-      <div className='tag' style={{backgroundColor: tagColor}} onClick={() => filterByTag(tag)} key={Math.random()*100000}>{tag}</div>
-    )
+   function handleDescriptionChange(event) {
+    setDescription(event.target.value);
   }
 
 
@@ -201,6 +396,8 @@ function Desk() {
 
   useEffect(() => {}, [boardData]);
 
+  useEffect(() => {}, [buttonStates]);
+
   // document.addEventListener("mousedown", (event) => {
   //   if (isModalOpen && event.target.id != "show") {
   //     setIsModalOpen(!isModalOpen);
@@ -211,14 +408,12 @@ function Desk() {
   return (
     <>
       <div className='sidebar'>
-        <h2 className='greeting'>Welcome back, <strong className='user'>{user}!</strong></h2>
+        <h2 className='greeting'>Welcome back to your desk, <strong className='user'>{user}!</strong></h2>
+        <h3>Let's catch you up:</h3>
+        {generateTag("recent")}
       </div>
 
-      <div className='navigation'>
-        <p><i class="fa-solid fa-user fa-xl navigation-item"></i>Profile</p>
-        <i class="fa-solid fa-house fa-xl"></i>
-        <i class="fa-solid fa-magnifying-glass fa-xl navigation-icon"></i>
-      </div>
+
 
       <section className='page'>
         {/* <section>
@@ -230,7 +425,7 @@ function Desk() {
         <Header />
 
         <div className='bar'>
-          <h2>Kudos</h2>
+          <h2 className='greeting'>Kudos</h2>
           <button className='button create-button' onClick={handleModalState}>CREATE</button>
           <section className=''>
             <input className='search-bar' placeholder='Search for a kudos...' value={searchQuery} onChange={handleSearch}></input>
@@ -241,20 +436,25 @@ function Desk() {
         </div>
 
         <div className='tag-filters'>
-          {Object.keys(TAGS).map(createTagFilters)}
+          {Object.keys(TAGS).map(generateTag)}
         </div>
 
         <div className='cards'>
           <Boards
             DATABASE = {DATABASE}
+            fetchBoards = {fetchBoards}
             boardsData = {boardData}
             routeState = {routeState}
             TAGS = {TAGS}
+            generateTag = {generateTag}
             key = {1}
           />
         </div>
 
         <section className={'create-modal ' + (isModalOpen ? 'show' : 'hide')}>
+            <span className='exit' onClick={handleModalState}><i className="fa-solid fa-circle-xmark fa-xl"></i></span>
+
+
             <section className='title-section'>
               <p>Title</p>
               <input id='title' className='form-input' value={title} onChange={handleFieldChange}></input>
@@ -263,23 +463,35 @@ function Desk() {
             <section className='author-section'>
               <p>Author</p>
               <input id='author' className='form-input author-field' value={author} readOnly></input>
-              <label className='switch'>
-                <input type='checkbox'/>
-                <span className='slider'></span>
-              </label>
+              <div style={{display: "flex"}}>
+                <label>
+                  Anonymous?
+                  <input className='checkbox' type='checkbox' checked={anonymous} onChange={handleAnonymousChange} onClickCapture={clickAnonymous}/>
+                </label>
+                <label>
+                  Guest?
+                  <input className='checkbox' type='checkbox' checked={guest} onChange={handleGuestChange} onClickCapture={clickGuest} />
+                </label>
+              </div>
+            </section>
+
+            <section className='title-section'>
+              <p>Description</p>
+              <input id='title' className='form-input' value={description} onChange={handleDescriptionChange}></input>
             </section>
 
             <section>
               <p>Tags</p>
-              <div>
-                <input className='tag-checkbox'type='checkbox'/>
+              <div className='tag-filters'>
+                {Object.keys(TAGS).splice(2).map(tag => buttonStates[tag] ? generateSelectorTag(tag) : generateSelectorOutlinedTag(tag))}
               </div>
             </section>
 
             <button className='submit-button' onClick={handleSubmit}>SUBMIT</button>
 
-            <p className={'warning ' + (showWarning ? 'show' : 'hide')}><i className='fa-solid fa-certificate rotate'></i>  Please fill in all required fields.</p>
+            <p className={'warning ' + (showWarning ? 'show' : 'hide')}><i className='fa-solid fa-certificate rotate'></i>&nbsp; Please fill in all required fields.</p>
           </section>
+          <Footer/>
       </section>
     </>
   )

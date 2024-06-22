@@ -1,20 +1,27 @@
-.cards {
+.cards-page {
+    margin: 4% 15%;
+    border-radius: 20px;
+    height: fit-content;
+}
+
+#cards {
     display: flex;
     flex-direction: row;
     gap: 5.8%;
     flex-wrap: wrap;
+    width: 100%;
     padding: 0% 3%;
 }
 
 .card {
     border: 2px solid grey;
-    border-radius: 10%;
-    height: 9%;
-    width: 15%;
+    border-radius: 10px;
+    text-wrap: wrap;
+    max-width: 15%;
     margin-top: 5%;
     padding: 2% 2%;
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
 }
 .card:hover {
     cursor: pointer;
@@ -35,21 +42,29 @@
 .tag {
     width: fit-content;
     padding: 1vh 2vh;
-    border-radius: 5%;
+    border-radius: 20px;
     font-size: 80%;
 }
 
 .gifs{
     display: flex;
     flex-wrap: wrap;
+    border: none;
+    gap: 2%;
+    justify-self: center;
+    margin: 2% 0%;
+    width: 100%;
+    justify-content: center;
 }
 
 .gif {
     width: 20%;
-    height: 20%;
+    margin-top: 1%;
+    object-fit: cover;
+    border-radius: 5px;
 }
 .gif:hover {
-
+    cursor: pointer;
 }
 
 .modal {
@@ -73,4 +88,31 @@
 
 .hide {
     display: none;
+}
+
+.card-img {
+    height: 9%;
+    margin-top: 1%;
+    object-fit: cover;
+    border-radius: 5px;
+}
+
+.exit {
+    width: 100%;
+    text-align: end;
+}
+.exit:hover {
+    cursor: pointer;
+}
+
+.card-img {
+    width:  100%;
+    height: fit-content;
+}
+
+.comment {
+    padding: 3% 3%;
+    width: 60%;
+    background-color: lightgrey;
+    border-radius: 10px;
 }

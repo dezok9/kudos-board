@@ -27,6 +27,7 @@ model Boards {
   title         String
   imgURL        String
   tags          String[]
+  description   String  @default("")
   date          String
   upvotes       Int      @default(0)
 
@@ -38,11 +39,12 @@ model Boards {
 }
 
 model Cards {
-  id            Int    @id @unique @default(autoincrement())
+  id            Int       @id @unique @default(autoincrement())
   title         String
   message       String
   gifURL        String
-  upvotes       Int    @default(0)
+  upvotes       Int       @default(0)
+  comments      String[]  @default([])
 
   authorHandle  String @default("@anonymous")
   author        Users  @relation(fields: [authorHandle], references: [handle],  onDelete: Cascade)
