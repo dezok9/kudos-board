@@ -87,7 +87,6 @@ function BoardCards() {
         setCardIDCommentModalOpen(cardID);
 
         const card = await fetchCard(cardID);
-        console.log(card);
 
         setCurrentCardComments(card.comments);
         setAllComments(card.comments);
@@ -128,9 +127,7 @@ function BoardCards() {
     async function fetchCard(cardID) {
         try {
             const response = await fetch(`${DATABASE}/cards/${cardID}`);
-            console.log(response)
             const card = await response.json();
-            console.log(card);
 
             // Checks if res.ok, a boolean value checking if the fetch was successful (200-299).
             if (!response.ok) {
@@ -254,7 +251,6 @@ function BoardCards() {
             const response = await fetch(queryURL);
             const res = await response.json();
             const gifOptions = await res.data;
-            console.log(gifOptions);
             setGIFYoptions(gifOptions);
         }
         catch {
@@ -263,7 +259,6 @@ function BoardCards() {
     }
 
     function chooseGIF(gifInfo) {
-        console.log("xd")
         setGIFYoptions([]);
         setChosenGIF(gifInfo.images.original.url);
     }
