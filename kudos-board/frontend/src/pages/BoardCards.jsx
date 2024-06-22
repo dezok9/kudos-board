@@ -3,6 +3,7 @@ import { useLocation, Link } from 'react-router-dom'
 import Header from "../components/Header"
 import Card from '../components/cards/Card'
 import './BoardCards.css'
+import Footer from "../components/Footer"
 
 function BoardCards() {
     const [cardsData, setCardsData] = useState([]);
@@ -413,6 +414,7 @@ function BoardCards() {
 
                 <p className={'warning ' + (showWarning ? 'show' : 'hide')}><i className='fa-solid fa-certificate rotate'></i>  Please fill in all required fields.</p>
             </div>
+            <Footer />
         </section>
     )
 }

@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react';
 import Boards from '../components/boards/Boards';
 import Header from '../components/Header'
 import './Desk.css';
+import Footer from '../components/Footer';
 
 
 function Desk() {
   // User ID stored and passed to other pages.
-  const [user, setUser] = useState("@dezok");
+  const [user, setUser] = useState("@user");
 
   const routeState = user;
 
@@ -490,6 +491,7 @@ function Desk() {
 
             <p className={'warning ' + (showWarning ? 'show' : 'hide')}><i className='fa-solid fa-certificate rotate'></i>&nbsp; Please fill in all required fields.</p>
           </section>
+          <Footer/>
       </section>
     </>
   )

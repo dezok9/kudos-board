@@ -75,8 +75,10 @@ function Boards(boards) {
         const boardID = boardData.id;
         const boardUpvotes = boardData.upvotes;
 
+
+
         return (
-            <Link to={`/board/${boardData.id}`} state={boards.routeState} className='board-card' key={boardData.id}>
+            <div onClick={() => navigate(`/board/${boardData.id}`)} className='board-card' key={boardData.id}>
                 <p className='board-id'>#{boardData.id}</p>
                 <img className='img' src={boardData.imgURL}></img>
                 <p>{boardData.title}</p>
@@ -86,8 +88,8 @@ function Boards(boards) {
                     {boardData.tags.map(boards.generateTag)}
                 </div>
                 <p>{boardData.date}</p>
-                <i className="fa-solid fa-trash" onClick={() => deleteBoard(boardData.id)}></i>
-            </Link>
+                <i className="fa-solid fa-trash" onClick={(event) => deleteBoard(boardData.id)}></i>
+            </div>
 
         )
     }

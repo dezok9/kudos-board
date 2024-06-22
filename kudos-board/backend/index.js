@@ -19,7 +19,7 @@ app.get("/boards", async (req, res) => {
 app.get("/boards/recents", async (req, res) => {
     const boards = await prisma.boards.findMany({
         take: 5,
-        orderBy: {id : 'asc'}
+        orderBy: {id : 'desc'}
     });
     res.status(200).json(boards);
 })
