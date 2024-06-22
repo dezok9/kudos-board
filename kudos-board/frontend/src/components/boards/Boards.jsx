@@ -88,7 +88,7 @@ function Boards(boards) {
                     {boardData.tags.map(boards.generateTag)}
                 </div>
                 <p>{boardData.date}</p>
-                <i className="fa-solid fa-trash" onClick={(event) => deleteBoard(boardData.id)}></i>
+                <i className="fa-solid fa-trash" onClick={() => deleteBoard(boardData.id)}></i>
             </div>
 
         )
