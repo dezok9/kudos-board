@@ -1,6 +1,6 @@
 ## Unit Assignment: Kudos Board
 
-Submitted by: **Destiny Okonkw**
+Submitted by: **Destiny Okonkwo**
 
 Deployed Application (optional): [Kudos Board Deployed Site](ADD_LINK_HERE)
 
