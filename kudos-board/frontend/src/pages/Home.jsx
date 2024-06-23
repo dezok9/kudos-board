@@ -1,35 +1,29 @@
 import { useState, useEffect } from 'react';
 import Boards from '../components/boards/Boards';
 import Header from '../components/Header'
-import './Desk.css';
+import './Home.css';
 import Footer from '../components/Footer';
 
-
-function Desk() {
-  // User ID stored and passed to other pages.
-  const [user, setUser] = useState("@user");
-
-  const routeState = user;
-
+function Home() {
   const [boardData, setBoardData] = useState([]);
+
+  // Modal use states.
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
-
   const [title, setTitle] = useState("");
   const [author, setAuthor] = useState("@user");
   const [searchQuery, setSearchQuery] = useState("");
   const [description, setDescription] = useState("");
-
-
+  // Use states for tags for modals.
   const [birthdaysSelected, setBirthdaysSelected] = useState(false);
   const [communitySelected, setCommunitySelected] = useState(false);
   const [celebrationSelected, setCelebrationSelected] = useState(false);
   const [projectsSelected, setProjectsSelected] = useState(false);
   const [thanksSelected, setThanksSelected] = useState(false);
-
   const [anonymous, setAnonymous] = useState(false);
   const [guest, setGuest] = useState(false);
 
+  // States for buttons collected into a single dictionary. States in this dictionary are defined above.
   const buttonStates = {"birthdays": birthdaysSelected, "community": communitySelected,
       "celebration": celebrationSelected, "projects & work": projectsSelected, "thank you": thanksSelected};
 
@@ -42,6 +36,10 @@ function Desk() {
               "celebration": "rgba(237, 182, 37, 0.6)",
               "projects & work": "rgba(230, 24, 109, 0.6)",
               "thank you": "rgba(255, 87, 51, 0.6"};
+
+
+
+  /////////// API & CRUD CALLS /////////////
 
   /***
    * Fetching the board information from our database.
@@ -63,6 +61,9 @@ function Desk() {
     }
   }
 
+  /***
+   * Function for fetching and filtering the recent board posts.
+   */
   async function fetchRecents() {
     try {
       const response = await fetch(`${DATABASE}/boards/recents`);
@@ -76,7 +77,7 @@ function Desk() {
       setBoardData(boards);
     }
     catch (error) {
-      console.log(`ERROR GETTING BOARDS: ${error}.`);
+      console.log(`ERROR GETTING RECENT BOARDS: ${error}.`);
     }
   }
 
@@ -96,8 +97,6 @@ function Desk() {
       }
 
       apiQuery = apiQuery.concat(`&limit=1&api_key=${GIFY_API_KEY}`);
-      // apiQuery = apiQuery.replace(" ", "+");
-
       const response = await fetch(apiQuery);
       const gifyData = await response.json();
 
@@ -119,25 +118,28 @@ function Desk() {
       }
     }
     catch {
-
+      console.log(`ERROR GETTING IMAGE URL: ${error}.`);
     }
   }
 
   /***
    * Adding new board information to our database.
+   * Determines which tags are selected prior to adding board information.
    */
   async function postBoard(boardTitle, boardAuthor, description, boardDate) {
     let tags = []
-      if (birthdaysSelected){
-        tags.push("birthdays");}
-      if (communitySelected){
-        tags.push("community");}
-      if (celebrationSelected){
-        tags.push("celebration");}
-      if (projectsSelected){
-        tags.push("projects & work");}
-      if (thanksSelected){
-        tags.push("thank you");}
+      switch (true) {
+        case birthdaysSelected:
+          tags.push("birthdays");
+        case communitySelected:
+          tags.push("community");
+        case celebrationSelected:
+          tags.push("celebration");
+        case projectsSelected:
+          tags.push("projects & work")
+        case thanksSelected:
+          tags.push("thank you");
+      }
 
     try {
       const gifURL = await getImgURL(boardTitle, tags);
@@ -199,8 +201,8 @@ function Desk() {
   }
 
     /***
-   * Filters by the indicated tag.
-   * Performed when one of the tags is clicked.
+   * Search by search query.
+   * Performed when the search button is clicked.
    */
     async function search() {
         try {
@@ -220,27 +222,27 @@ function Desk() {
     }
 
     /***
-       * Generates filled tags using the colors assigned to each tag as communicated by boards.tagColors.
-       */
-    function generateTag(tag) {
+     * Generates filled tags using the colors assigned to each tag as communicated by boards.tagColors.
+     * Called by a mapping function.
+     */
+    function generateTag(tag, toggle) {
       const tagColor = TAGS[tag]
 
-      return (
-          <p className='tag' style={{backgroundColor: tagColor, border: `2px solid ${tagColor}`}} onClick={() => filterByTag(tag)} key={Math.random()*1000}>{tag}</p>
-      )
+      if (!toggle) {
+        return (
+            <p className='tag' style={{backgroundColor: tagColor, border: `2px solid ${tagColor}`}} onClick={() => filterByTag(tag)} key={Math.random()*1000}>{tag}</p>
+        )
+      }
+      else {
+        return (
+          <p className='tag' onClick={() => toggleFilter(tag)} style={{backgroundColor: tagColor, border: `2px solid ${tagColor}`}} key={Math.random()*1000}>{tag}</p>
+        )
+      }
   }
 
   /***
-       * Generates tags using the colors assigned to each tag as communicated by boards.tagColors.
-       */
-  function generateOutlinedTag(tag) {
-    const tagColor = TAGS[tag]
-
-    return (
-        <p className='tag' style={{border: `2px solid ${tagColor}`}} key={Math.random()*1000}>{tag}</p>
-    )
-  }
-
+   * Changes the filter from outlined to filled and vice versa.
+   */
   function toggleFilter(tag) {
     switch(tag) {
       case "birthdays":
@@ -262,28 +264,15 @@ function Desk() {
   }
 
   /***
-   * Generates filled tags using the colors assigned to each tag as communicated by boards.tagColors.
+   * Generates tags using the colors assigned to each tag as communicated by boards.tagColors.
    */
-  function generateSelectorTag(tag) {
+  function generateSelectorOutlinedTag(tag) {
     const tagColor = TAGS[tag]
 
     return (
-        <p className='tag' onClick={() => toggleFilter(tag)} style={{backgroundColor: tagColor, border: `2px solid ${tagColor}`}} key={Math.random()*1000}>{tag}</p>
+        <p className='tag' onClick={() => toggleFilter(tag)}  style={{border: `2px solid ${tagColor}`}} key={Math.random()*1000}>{tag}</p>
     )
-    }
-
-    /***
-     * Generates tags using the colors assigned to each tag as communicated by boards.tagColors.
-     */
-    function generateSelectorOutlinedTag(tag) {
-      const tagColor = TAGS[tag]
-
-      return (
-          <p className='tag' onClick={() => toggleFilter(tag)}  style={{border: `2px solid ${tagColor}`}} key={Math.random()*1000}>{tag}</p>
-      )
-    }
-
-
+  }
 
 
   /***
@@ -324,7 +313,7 @@ function Desk() {
 
 
   /***
-   *
+   *  Handles clicking the anonymous checkbox for a card.
    */
   function clickAnonymous() {
     setAnonymous(!anonymous);
@@ -340,6 +329,9 @@ function Desk() {
     }
   }
 
+  /***
+   *  Handles clicking the guest checkbox for a card.
+   */
   function clickGuest() {
     setGuest(!guest);
 
@@ -351,7 +343,6 @@ function Desk() {
     }
   }
 
-
   /***
    * Handles changes to the board creation form.
    */
@@ -360,21 +351,21 @@ function Desk() {
   }
 
   /***
-   * Handles changes to the board creation form.
+   * Handles changes to the anonymous checkbox.
    */
   function handleAnonymousChange(event) {
     setAnonymous(event.target.value);
   }
 
   /***
-   * Handles changes to the board creation form.
+   * Handles changes to the guest checkbox.
    */
   function handleGuestChange(event) {
     setGuest(event.target.value);
   }
 
   /***
-   * Handle search button being hit.
+   * Handle search button being clicked.
    */
   function handleSearch(event) {
     setSearchQuery(event.target.value);
@@ -388,9 +379,7 @@ function Desk() {
   }
 
 
-  useEffect(() => {
-    fetchBoards();
-  }, [isModalOpen]);
+  useEffect(() => {fetchBoards()}, [isModalOpen]);
 
   useEffect(() => {}, [title]);
 
@@ -398,30 +387,16 @@ function Desk() {
 
   useEffect(() => {}, [buttonStates]);
 
-  // document.addEventListener("mousedown", (event) => {
-  //   if (isModalOpen && event.target.id != "show") {
-  //     setIsModalOpen(!isModalOpen);
-  //   }
-  // })
-
 
   return (
     <>
       <div className='sidebar'>
-        <h2 className='greeting'>Welcome back to your desk, <strong className='user'>{user}!</strong></h2>
+        <h2 className='greeting'>Welcome back to your desk, <strong className='user'>{author}!</strong></h2>
         <h3>Let's catch you up:</h3>
         {generateTag("recent")}
       </div>
 
-
-
       <section className='page'>
-        {/* <section>
-          <i className='fa-solid fa-certificate fa-10x decor-one rotate'></i>
-          <i className='fa-solid fa-certificate fa-6x decor-two rotate'></i>
-          <i className='fa-solid fa-certificate rotate'></i>
-        </section> */}
-
         <Header />
 
         <div className='bar'>
@@ -444,7 +419,6 @@ function Desk() {
             DATABASE = {DATABASE}
             fetchBoards = {fetchBoards}
             boardsData = {boardData}
-            routeState = {routeState}
             TAGS = {TAGS}
             generateTag = {generateTag}
             key = {1}
@@ -483,7 +457,7 @@ function Desk() {
             <section>
               <p>Tags</p>
               <div className='tag-filters'>
-                {Object.keys(TAGS).splice(2).map(tag => buttonStates[tag] ? generateSelectorTag(tag) : generateSelectorOutlinedTag(tag))}
+                {Object.keys(TAGS).splice(2).map(tag => buttonStates[tag] ? generateTag(tag) : generateSelectorOutlinedTag(tag))}
               </div>
             </section>
 
@@ -497,4 +471,4 @@ function Desk() {
   )
 }
 
-export default Desk;
+export default Home;
