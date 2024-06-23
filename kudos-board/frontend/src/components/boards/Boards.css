@@ -14,7 +14,6 @@
     border: 2px solid grey;
     border-radius: 10px;
     width: fit-content;
-    /* height: fit-content; */
     margin-top: 5%;
     padding: 2% 2%;
     display: flex;
@@ -25,14 +24,14 @@
     cursor: pointer;
 }
 
-.img {
-    width: 150px;
-    justify-self: center;
-}
-
 .board-id {
     align-self: self-end;
     color: rgba(0, 0, 0, 0.3);
+}
+
+.img {
+    width: 150px;
+    justify-self: center;
 }
 
 .author {

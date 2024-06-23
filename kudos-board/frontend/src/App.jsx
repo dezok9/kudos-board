@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { useState, useEffect } from 'react';
-import Desk from './pages/Desk';
-import BoardCards from './pages/BoardCards';
+import Home from './pages/Home';
+import Cards from './pages/Cards';
 
 
 import './App.css';
@@ -11,9 +11,8 @@ function App() {
     <>
       <Router>
       <Routes>
-        <Route path="/" element=
-        {<Desk />} />
-        <Route path="/board/:id" element={<BoardCards />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/board/:id" element={<Cards />} />
       </Routes>
     </Router>
     </>
