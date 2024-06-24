@@ -128,18 +128,21 @@ function Home() {
    */
   async function postBoard(boardTitle, boardAuthor, description, boardDate) {
     let tags = []
-      switch (true) {
-        case birthdaysSelected:
-          tags.push("birthdays");
-        case communitySelected:
-          tags.push("community");
-        case celebrationSelected:
-          tags.push("celebration");
-        case projectsSelected:
-          tags.push("projects & work")
-        case thanksSelected:
-          tags.push("thank you");
-      }
+    if (birthdaysSelected){
+      tags.push("birthdays");
+    }
+    if (communitySelected){
+      tags.push("community");
+    }
+    if (celebrationSelected){
+      tags.push("celebration");
+    }
+    if (projectsSelected){
+      tags.push("projects & work");
+    }
+    if (thanksSelected){
+      tags.push("thank you");
+    }
 
     try {
       const gifURL = await getImgURL(boardTitle, tags);

@@ -2,7 +2,7 @@
 
 Submitted by: **Destiny Okonkwo**
 
-Deployed Application (optional): [Kudos Board Deployed Site](ADD_LINK_HERE)
+Deployed Application (optional): [Kudos Board Deployed Site](https://kudos-board-frontend-xli7.onrender.com/)
 
 ### Application Features
 
@@ -47,7 +47,8 @@ Deployed Application (optional): [Kudos Board Deployed Site](ADD_LINK_HERE)
 
 
 ### Walkthrough Video
-`https://www.loom.com/share/e0d29a00be7c4f80bdb4686ea5389133?sid=95df9d8a-c78a-4c20-b826-24a329542832`
+YouTube: `https://youtu.be/mraHJjvmYEw`
+Loom: `https://www.loom.com/share/07656b78a418465b816cfddfdb4978d2?sid=de580633-26a9-4a43-87ae-25605aa73aea`
 
 ### Reflection
 
@@ -65,4 +66,4 @@ One thing that didn't go as planned was my use of the GIFY API and creating my e
 
 ### Shout out
 
-Shout out to Dara, Sammy, Izu, and Tosin!!
+Shout out to Dara, Sammy, Izu, Sammy, and Tosin!!
