@@ -37,7 +37,7 @@ Deployed Application (optional): [Kudos Board Deployed Site](https://kudos-board
   - [ ] Users should be able to log in with a username and password.
   - [ ] Users should be able to sign up for a new account.
   - [X]  Boards and cards should be associated with a user.
-    - [ ]  Anonymous cards or cards by guest users should still be allowed.
+    - [X]  Anonymous cards or cards by guest users should still be allowed.
   - [ ] Add a new filter option on the home page to display only the current user's boards.
   - [ ] Allow boards to be deleted only if they are owned by the user.
 - [X] **Deployment**
