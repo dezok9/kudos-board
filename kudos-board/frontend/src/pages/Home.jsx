@@ -225,20 +225,24 @@ function Home() {
      * Generates filled tags using the colors assigned to each tag as communicated by boards.tagColors.
      * Called by a mapping function.
      */
-    function generateTag(tag, toggle) {
+    function generateTag(tag) {
       const tagColor = TAGS[tag]
-
-      if (!toggle) {
-        return (
-            <p className='tag' style={{backgroundColor: tagColor, border: `2px solid ${tagColor}`}} onClick={() => filterByTag(tag)} key={Math.random()*1000}>{tag}</p>
-        )
-      }
-      else {
-        return (
-          <p className='tag' onClick={() => toggleFilter(tag)} style={{backgroundColor: tagColor, border: `2px solid ${tagColor}`}} key={Math.random()*1000}>{tag}</p>
-        )
-      }
+      return (
+        <p className='tag' onClick={() => toggleFilter(tag)} style={{backgroundColor: tagColor, border: `2px solid ${tagColor}`}} key={Math.random()*1000}>{tag}</p>
+      )
   }
+
+  /***
+     * Generates filled tags using the colors assigned to each tag as communicated by boards.tagColors.
+     * Different from above function in that clicking on button envokes filtering.
+     * Called by a mapping function.
+     */
+  function generateSelectorTag(tag) {
+    const tagColor = TAGS[tag]
+      return (
+          <p className='tag' style={{backgroundColor: tagColor, border: `2px solid ${tagColor}`}} onClick={() => filterByTag(tag)} key={Math.random()*1000}>{tag}</p>
+      )
+}
 
   /***
    * Changes the filter from outlined to filled and vice versa.
@@ -411,7 +415,7 @@ function Home() {
         </div>
 
         <div className='tag-filters'>
-          {Object.keys(TAGS).map(generateTag)}
+          {Object.keys(TAGS).map(generateSelectorTag)}
         </div>
 
         <div className='cards'>
