@@ -3,9 +3,6 @@ import { useState, useEffect } from 'react';
 import Home from './pages/Home';
 import Cards from './pages/Cards';
 
-
-import './App.css';
-
 function App() {
   return (
     <>
